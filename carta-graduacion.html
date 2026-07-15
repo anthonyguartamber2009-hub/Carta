@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Para mi niña</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=EB+Garamond:ital@0;1&display=swap');
+
+  :root{
+    --paper: #f6efe2;
+    --paper-shadow: #e7dcc3;
+    --ink: #3a2f2a;
+    --ink-soft: #5c4d43;
+    --rose: #b4636e;
+    --rose-deep: #8f4650;
+    --gold: #b5924f;
+    --sage: #7c8768;
+    --envelope: #eadfc8;
+    --envelope-dark: #d8c9a8;
+    --sky: #efe6d3;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html,body{
+    margin:0;
+    padding:0;
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse at 20% -10%, #fbf5e6 0%, transparent 55%),
+      radial-gradient(ellipse at 90% 110%, #f1e6cf 0%, transparent 50%),
+      var(--sky);
+    font-family: 'EB Garamond', serif;
+    color: var(--ink);
+    overflow-x:hidden;
+  }
+
+  .stage{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 6vh 20px;
+    position:relative;
+  }
+
+  /* ---------- floating distance motif ---------- */
+  .distance-track{
+    position:absolute;
+    top:6%;
+    left:0;
+    right:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    color: var(--ink-soft);
+    font-size:14px;
+    letter-spacing:.08em;
+    opacity:.75;
+    pointer-events:none;
+    z-index:1;
+  }
+  .distance-track .dot{ font-size:20px; color:var(--rose-deep); }
+  .distance-track .cap{ font-size:20px; color:var(--gold); }
+  .distance-line{
+    width:min(38vw,260px);
+    height:1px;
+    background: repeating-linear-gradient(to right, var(--ink-soft) 0 6px, transparent 6px 12px);
+    position:relative;
+  }
+
+  /* ---------- envelope ---------- */
+  #envelopeWrap{
+    position:relative;
+    width:min(92vw, 440px);
+    z-index:2;
+    cursor:pointer;
+  }
+  .envelope{
+    position:relative;
+    width:100%;
+    aspect-ratio: 4/2.7;
+    background: var(--envelope);
+    border-radius:4px;
+    box-shadow: 0 25px 50px -12px rgba(58,47,42,.35), 0 0 0 1px rgba(58,47,42,.06);
+    overflow:hidden;
+    transition: transform .5s ease;
+  }
+  .envelope::before,
+  .envelope::after{
+    content:"";
+    position:absolute;
+    bottom:0;
+    width:0; height:0;
+    border-style:solid;
+  }
+  .envelope::before{
+    left:0;
+    border-width: 0 0 105px 165px;
+    border-color: transparent transparent var(--envelope-dark) transparent;
+  }
+  .envelope::after{
+    right:0;
+    border-width: 105px 165px 0 0;
+    border-color: transparent transparent transparent var(--envelope-dark);
+  }
+  .flap{
+    position:absolute;
+    top:0; left:0; right:0;
+    height:0;
+    border-left: 220px solid transparent;
+    border-right: 220px solid transparent;
+    border-top: 130px solid var(--envelope-dark);
+    filter: drop-shadow(0 6px 10px rgba(58,47,42,.18));
+    transform-origin: top center;
+    transition: transform .8s cubic-bezier(.65,0,.35,1);
+    z-index:5;
+  }
+  #envelopeWrap.open .flap{
+    transform: rotateX(180deg);
+  }
+  .seal{
+    position:absolute;
+    top:96px;
+    left:50%;
+    transform: translateX(-50%);
+    width:58px; height:58px;
+    border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, var(--rose) 0%, var(--rose-deep) 70%);
+    box-shadow: 0 4px 8px rgba(0,0,0,.25), inset 0 -3px 6px rgba(0,0,0,.25), inset 0 3px 4px rgba(255,255,255,.15);
+    display:flex; align-items:center; justify-content:center;
+    z-index:6;
+    font-family:'Caveat', cursive;
+    color:#f4e9dc;
+    font-size:26px;
+    transition: opacity .3s ease .1s, transform .4s ease .1s;
+  }
+  #envelopeWrap.open .seal{
+    opacity:0;
+    transform: translateX(-50%) scale(.4) rotate(25deg);
+  }
+  .prompt{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    padding-bottom:18px;
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-size:15px;
+    color: var(--ink-soft);
+    letter-spacing:.05em;
+    z-index:2;
+    transition:opacity .4s ease;
+  }
+  #envelopeWrap.open .prompt{ opacity:0; pointer-events:none; }
+
+  .peek{
+    position:absolute;
+    left:6%; right:6%;
+    top:14px;
+    height:88%;
+    background: var(--paper);
+    border-radius:2px;
+    box-shadow: 0 -4px 12px rgba(58,47,42,.08);
+    z-index:3;
+    transition: transform .7s cubic-bezier(.2,.8,.3,1) .15s;
+  }
+  #envelopeWrap.open .peek{
+    transform: translateY(-146%);
+  }
+
+  /* ---------- letter ---------- */
+  #letterWrap{
+    position:relative;
+    z-index:4;
+    width:min(92vw, 620px);
+    margin-top:36px;
+    display:none;
+  }
+  #letterWrap.show{ display:block; }
+
+  .letter{
+    background: var(--paper);
+    background-image:
+      radial-gradient(circle at 8% 6%, rgba(255,255,255,.5), transparent 40%),
+      radial-gradient(circle at 95% 92%, rgba(0,0,0,.03), transparent 45%);
+    border-radius: 3px;
+    box-shadow: 0 30px 60px -20px rgba(58,47,42,.4), 0 0 0 1px rgba(58,47,42,.05);
+    padding: clamp(28px, 6vw, 64px) clamp(24px, 7vw, 72px);
+    opacity:0;
+    transform: translateY(28px);
+    transition: opacity .9s ease, transform .9s ease;
+  }
+  #letterWrap.show .letter{
+    opacity:1;
+    transform:none;
+  }
+
+  .letter-heading{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size: clamp(38px, 8vw, 54px);
+    color: var(--rose-deep);
+    margin: 0 0 6px 0;
+    line-height:1;
+  }
+  .letter-sub{
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    color: var(--gold);
+    font-size:14px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    margin-bottom: 30px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .letter-sub::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background: linear-gradient(to right, var(--gold), transparent);
+  }
+
+  .letter p{
+    font-size: clamp(16.5px, 2.4vw, 19px);
+    line-height:1.85;
+    color: var(--ink);
+    margin: 0 0 22px 0;
+  }
+  .letter p .drop{
+    font-family:'Caveat', cursive;
+    font-size:1.7em;
+    color: var(--rose-deep);
+    font-weight:600;
+    margin-right:2px;
+  }
+
+  .keepsake{
+    margin: 34px 0;
+    padding: 18px 22px;
+    border-left: 2px solid var(--rose);
+    background: rgba(180,99,110,.06);
+    font-family:'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(17px, 2.6vw, 20px);
+    color: var(--rose-deep);
+  }
+
+  .signoff{
+    margin-top: 44px;
+    text-align:right;
+  }
+  .signoff .line1{
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-size:16px;
+    color: var(--ink-soft);
+    margin-bottom:2px;
+  }
+  .signoff .name{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size: clamp(34px, 6vw, 46px);
+    color: var(--rose-deep);
+  }
+
+  .postmark{
+    margin-top:40px;
+    padding-top:20px;
+    border-top: 1px dashed var(--paper-shadow);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    color: var(--ink-soft);
+    font-size:13px;
+    letter-spacing:.06em;
+  }
+  .stamp{
+    width:44px; height:54px;
+    border:1.5px dashed var(--gold);
+    border-radius:2px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:20px;
+    color: var(--gold);
+    transform: rotate(-6deg);
+  }
+
+  @media (max-width:480px){
+    .flap{ border-left-width:150px; border-right-width:150px; border-top-width:88px; }
+    .seal{ top:64px; width:46px; height:46px; font-size:20px; }
+    .distance-track{ font-size:11px; gap:8px; top:4%; }
+    .distance-line{ width:22vw; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .flap, .peek, .letter, .seal, .prompt{ transition:none !important; }
+  }
+
+  footer{
+    text-align:center;
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-size:12px;
+    color: var(--ink-soft);
+    opacity:.5;
+    padding: 30px 0 40px;
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="distance-track">
+    <span class="dot">📍</span>
+    <span>Ecuador</span>
+    <span class="distance-line"></span>
+    <span class="cap">🎓</span>
+    <span>tu graduación</span>
+  </div>
+
+  <div id="envelopeWrap">
+    <div class="envelope">
+      <div class="peek"></div>
+      <div class="flap"></div>
+      <div class="seal">A</div>
+      <div class="prompt">toca el sobre para abrirlo ✦</div>
+    </div>
+  </div>
+
+  <div id="letterWrap">
+    <div class="letter">
+      <div class="letter-sub">Con motivo de tu graduación</div>
+      <h1 class="letter-heading">Mi niña</h1>
+
+      <p>Espero disfrutes tu graduación. Aunque estemos lejos, te mando un abrazo desde Ecuador, y créeme que si estuvieras cerca iría a tu graduación, porque eso es algo que me hubiera gustado. También me hubiera gustado cumplir todo lo que alguna vez decíamos, aunque yo sabía que por la distancia era algo muy complicado que pase.</p>
+
+      <p>Te quiero. Quiero verte feliz, disfrutando de la vida, quiero verte libre. Quiero que mantengas la frente en alto y el brillo de tu sonrisa al máximo.</p>
+
+      <p>Quiero decirte que no importa en dónde estemos, tú siempre contarás conmigo. Si un día nuestros caminos no vuelven a unirse, espero que me digas que lograste cumplir tus metas, aunque lo más seguro es que para entonces ni me recuerdes.</p>
+
+      <p>Te quiero, y mucho, aunque nunca me contestaste cosas de las que me tuve que enterar por mi cuenta. Sea como sea. Bajo cualquier circunstancia.</p>
+
+      <div class="keepsake">Te quiero, y tú tienes un espacio en mi corazón que, para el poco tiempo que estuvimos juntos, te ganaste.</div>
+
+      <p>Recuérdalo siempre: te quise, te quiero y te querré, porque usted significó alguien muy especial para mí.</p>
+
+      <div class="signoff">
+        <div class="line1">Att:</div>
+        <div class="name">Anthony 💕🫰🏻</div>
+      </div>
+
+      <div class="postmark">
+        <span>Enviado desde el corazón, con distancia de por medio</span>
+        <span class="stamp">🎓</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>hecho con cariño, para un día importante</footer>
+
+<script>
+  const wrap = document.getElementById('envelopeWrap');
+  const letterWrap = document.getElementById('letterWrap');
+  let opened = false;
+
+  wrap.addEventListener('click', () => {
+    if(opened) return;
+    opened = true;
+    wrap.classList.add('open');
+    setTimeout(() => {
+      letterWrap.classList.add('show');
+      letterWrap.scrollIntoView({behavior:'smooth', block:'center'});
+    }, 650);
+  });
+</script>
+
+</body>
+</html>
